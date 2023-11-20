@@ -56,7 +56,7 @@ class DraftManger(models.Manager):
     # Returns queryset of draft status
     def get_queryset(self):
         return super().get_queryset().filter(status=Bit.Status.DRAFT)
-    
+
 
 class Bit(models.Model):
 
@@ -65,6 +65,12 @@ class Bit(models.Model):
         ACCEPTED = 'َAC', 'Accepted'
         REJECTED = 'RJ', 'Rejected'
 
+    # Category for this Bit
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="دسته بندی")
+
+    # Tags for this Bit
+    tags = models.ManyToManyField(Tag, verbose_name="برچسب ها", blank=True)
+
     # Represents the title of the Bit
     title = models.CharField(max_length=200, verbose_name="تایتل بیت", unique=True)
 
@@ -72,10 +78,10 @@ class Bit(models.Model):
     slug = models.SlugField(max_length=200, verbose_name="اسلاگ(url)", unique=True)
 
     # Represents the beats per minute (BPM) of the Bit
-    bpm = models.BigIntegerField(verbose_name="")
+    bpm = models.BigIntegerField()
 
     # Represents the musical keys of the Bit
-    keys = models.CharField(max_length=2)
+    keys = models.CharField(max_length=20)
 
     # Represents the publish date of the Bit
     publish = models.DateField(verbose_name="زمان انتشار", blank=True, null=True)
@@ -114,9 +120,9 @@ class Bit(models.Model):
     comments = models.IntegerField(verbose_name="تعداد کامنت ها", default=0)
 
     # Managers for the Bit model
-    objects = models.Manager() 
-    accepted = AcceptedManger() 
-    drafts = DraftManger() 
+    objects = models.Manager()
+    accepted = AcceptedManger()
+    drafts = DraftManger()
 
     class Meta:
         verbose_name = "بیت"
