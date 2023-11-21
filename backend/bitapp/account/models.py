@@ -1,13 +1,170 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.validators import MinValueValidator, MaxValueValidator
-from .managers import(
-    UserManager,
-    SingerManager,
-    ProducerManager,
-    SupporterManager,
-    SimpleUserManager, 
-)
+
+
+
+
+
+class UserManager(BaseUserManager):
+    def create_user(self , user_name, email , phone, password = None): 
+        if not user_name or len(user_name) <= 0 :
+            raise ValueError("Users must have a valid username")
+        
+        if not phone or len(phone) <= 0 :
+            raise ValueError('Phone number is required ')
+        
+        if not email or len(email) <= 0 :  
+            raise  ValueError("Email field is required !") 
+        
+        if not password or len(password) < 8 :
+            raise ValueError("Password should be at least 8 characters long ")
+        
+        email  = email.lower() 
+        user = self.model( 
+            user_name = user_name,
+            email = email,
+            phone = phone
+        ) 
+        user.set_password(password) 
+        user.save(using = self._db) 
+        return user 
+
+    def create_superuser(self, user_name, email, phone, password=None):
+        if not user_name or len(user_name) <= 0 :
+            raise ValueError("Users must have a valid username")
+        
+        if not phone or len(phone) <= 0 :
+            raise ValueError('Phone number is required ')
+        
+        if not email or len(email) <= 0 :  
+            raise  ValueError("Email field is required !") 
+        
+        if not password or len(password) < 8 :
+            raise ValueError("Password should be at least 8 characters long ")
+        
+        user = self.create_user(
+            email=self.normalize_email(email),
+            user_name=user_name,
+            phone=phone,
+            password=password
+        )
+        user.is_admin = True
+        user.save(using=self._db)
+        return user
+    
+
+
+class  SimpleUserManager(models.Manager):
+    def create_user(self , user_name, email , phone, password = None): 
+        if not user_name or len(user_name) <= 0 :
+            raise ValueError("Users must have a valid username")
+        
+        if not phone or len(phone) <= 0 :
+            raise ValueError('Phone number is required ')
+        
+        if not email or len(email) <= 0 :  
+            raise  ValueError("Email field is required !") 
+        
+        if not password or len(password) < 8 :
+            raise ValueError("Password should be at least 8 characters long ")
+        
+        email  = email.lower() 
+        user = self.model( 
+            user_name = user_name,
+            email = email,
+            phone = phone
+        ) 
+        user.set_password(password) 
+        user.save(using = self._db) 
+        return user 
+    
+    def get_queryset(self, *args, **kwargs):
+        return super().get_queryset(*args, **kwargs).filter(type=User.Types.SIMPLE_USER)
+    
+
+class SingerManager(models.Manager):
+    def create_user(self , user_name, email , phone, password = None): 
+        if not user_name or len(user_name) <= 0 :
+            raise ValueError("Users must have a valid username")
+        
+        if not phone or len(phone) <= 0 :
+            raise ValueError('Phone number is required ')
+        
+        if not email or len(email) <= 0 :  
+            raise  ValueError("Email field is required !") 
+        
+        if not password or len(password) < 8 :
+            raise ValueError("Password should be at least 8 characters long ")
+        
+        email  = email.lower() 
+        user = self.model( 
+            user_name = user_name,
+            email = email,
+            phone = phone
+        ) 
+        user.set_password(password) 
+        user.save(using = self._db) 
+        return user 
+    
+    def get_queryset(self, *args, **kwargs):
+        return super().get_queryset(*args, **kwargs).filter(type=User.Types.SINGER)
+    
+
+class ProducerManager(models.Manager):
+    def create_user(self , user_name, email , phone, password = None): 
+        if not user_name or len(user_name) <= 0 :
+            raise ValueError("Users must have a valid username")
+        
+        if not phone or len(phone) <= 0 :
+            raise ValueError('Phone number is required ')
+        
+        if not email or len(email) <= 0 :  
+            raise  ValueError("Email field is required !") 
+        
+        if not password or len(password) < 8 :
+            raise ValueError("Password should be at least 8 characters long ")
+        
+        email  = email.lower() 
+        user = self.model( 
+            user_name = user_name,
+            email = email,
+            phone = phone
+        ) 
+        user.set_password(password) 
+        user.save(using = self._db) 
+        return user 
+    
+    def get_queryset(self, *args, **kwargs):
+        return super().get_queryset(*args, **kwargs).filter(type=User.Types.PRODUCER)
+    
+
+class SupporterManager(models.Manager):
+    def create_user(self , user_name, email , phone, password = None): 
+        if not user_name or len(user_name) <= 0 :
+            raise ValueError("Users must have a valid username")
+        
+        if not phone or len(phone) <= 0 :
+            raise ValueError('Phone number is required ')
+        
+        if not email or len(email) <= 0 :  
+            raise  ValueError("Email field is required !") 
+        
+        if not password or len(password) < 8 :
+            raise ValueError("Password should be at least 8 characters long ")
+        
+        email  = email.lower() 
+        user = self.model( 
+            user_name = user_name,
+            email = email,
+            phone = phone
+        ) 
+        user.set_password(password) 
+        user.save(using = self._db) 
+        return user 
+    
+    def get_queryset(self, *args, **kwargs):
+        return super().get_queryset(*args, **kwargs).filter(type=User.Types.SUPPORTER)
 
 
 
@@ -27,6 +184,9 @@ class User(AbstractBaseUser):
         default=Types.SIMPLE_USER,
     )
 
+    user_name = models.CharField(max_length=20, 
+                                 verbose_name="نام کاربری", unique=True)
+
     email = models.EmailField(
         verbose_name="ایمیل",
         max_length=255,
@@ -36,7 +196,9 @@ class User(AbstractBaseUser):
     phone = models.CharField(verbose_name="شماره تلفن",
                                    max_length=11, unique=True)
     
-    
+    image = models.ImageField(verbose_name="تصویر پروفایل", 
+                              upload_to='users/', blank=True, null=True)
+
     f_name = models.CharField(verbose_name="نام",
                               max_length=200, null=True)
     
@@ -55,8 +217,8 @@ class User(AbstractBaseUser):
 
     objects = UserManager()
 
-    USERNAME_FIELD = "artist_name"
-    REQUIRED_FIELDS = ['email', 'phone', 'type']
+    USERNAME_FIELD = "user_name"
+    REQUIRED_FIELDS = ['email', "phone"]
     
     
     class Meta:
@@ -66,7 +228,7 @@ class User(AbstractBaseUser):
         
 
     def __str__(self):
-        return self.artist_name
+        return self.user_name
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
