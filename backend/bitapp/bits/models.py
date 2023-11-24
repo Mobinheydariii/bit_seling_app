@@ -1,6 +1,6 @@
 from django.db import models
 from django.urls import reverse
-# Create your models here.
+from account.models import User
 
 
 class Category(models.Model):
@@ -71,6 +71,11 @@ class Bit(models.Model):
     # Tags for this Bit
     tags = models.ManyToManyField(Tag, verbose_name="برچسب ها", blank=True)
 
+    # Producer or the musician 
+    producer = models.ForeignKey(User,
+                                 on_delete=models.CASCADE,
+                                 related_name="bit_producer", verbose_name="پرودوسر")
+    
     # Represents the title of the Bit
     title = models.CharField(max_length=200, verbose_name="تایتل بیت", unique=True)
 
@@ -150,3 +155,29 @@ class Bit(models.Model):
     def increment_comments(self):
         self.comments += 1
         self.save()
+
+    
+
+class Comment(models.Model):
+    bit = models.ForeignKey(Bit, 
+                            on_delete=models.CASCADE,
+                            related_name="bit_comments", verbose_name="کامنت های بیت")
+    
+    user = models.ForeignKey(User,
+                             on_delete=models.CASCADE, 
+                             related_name="user_comment", verbose_name="کامنت کاربر")
+    
+    comment = models.TextField(verbose_name="کامنت")
+
+    updated = models.DateTimeField(verbose_name="آخرین آپدیت", auto_now=True)
+    created = models.DateTimeField(verbose_name="زمان کامنت", auto_now_add=True)
+
+    class Meta:
+        ordering = ["created"]
+        verbose_name = "کامنت"
+        verbose_name_plural = "کامنت ها"
+
+    
+    def __str__(self):
+        return f'{self.bit.title}---{self.user.user_name}'
+    
