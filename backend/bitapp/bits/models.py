@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from account.models import User
+from .managers import AcceptedManger, DraftManger
 
 
 class Category(models.Model):
@@ -41,21 +42,6 @@ class Tag(models.Model):
 
         # human-readable name of tag model (plural)
         verbose_name_plural = "برچسب ها"
-
-
-
-class AcceptedManger(models.Manager):
-    """Custom manager for accepted records."""
-
-    def get_queryset(self):
-        """Filter records based on the 'accepted' status."""
-        return super().get_queryset().filter(status=Bit.Status.ACCEPTED)
-
-
-class DraftManger(models.Manager):
-    # Returns queryset of draft status
-    def get_queryset(self):
-        return super().get_queryset().filter(status=Bit.Status.DRAFT)
 
 
 class Bit(models.Model):
