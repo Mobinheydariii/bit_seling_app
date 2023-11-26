@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'bits.apps.BitsConfig',
     'account.apps.AccountConfig',
+    'tracks.apps.TracksConfig',
 ]
 
 MIDDLEWARE = [
