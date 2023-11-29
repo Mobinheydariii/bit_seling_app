@@ -57,6 +57,9 @@ class Track(models.Model):
     
     title = models.CharField(max_length=200, 
                              verbose_name="عنوان ترک", unique=True)
+    
+    slug = models.SlugField(max_length=200, 
+                            verbose_name="اسلاگ ترک", unique=True)
 
     file = models.FileField(upload_to='music/', 
                             verbose_name="فایل موزیک", unique=True)

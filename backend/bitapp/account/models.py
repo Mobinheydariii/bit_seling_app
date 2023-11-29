@@ -4,7 +4,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from . import managers
 
 
-
 class User(AbstractBaseUser):
 
     class Types(models.TextChoices):
@@ -35,6 +34,8 @@ class User(AbstractBaseUser):
         default=UserStatus.UN_OFFICIAL,
     )
 
+    
+
     user_name = models.CharField(max_length=20, 
                                  verbose_name="نام کاربری", unique=True)
 
@@ -47,16 +48,6 @@ class User(AbstractBaseUser):
     phone = models.CharField(verbose_name="شماره تلفن",
                                    max_length=11, unique=True)
     
-    image = models.ImageField(verbose_name="تصویر پروفایل", 
-                              upload_to='users/', blank=True, null=True)
-
-    f_name = models.CharField(verbose_name="نام",
-                              max_length=200, null=True)
-    
-    l_name = models.CharField(verbose_name="نام خانوادگی",
-                              max_length=200, null=True)
-    
-    
     is_active = models.BooleanField(default=True,
                                     verbose_name="فعال")
     
@@ -65,6 +56,16 @@ class User(AbstractBaseUser):
 
     date_joined = models.DateTimeField(auto_now_add=True)
 
+    bio = models.TextField(max_length=500, 
+                           verbose_name="بیوگرافی", blank=True, null=True)
+    image = models.ImageField(verbose_name="تصویر پروفایل", 
+                              upload_to='users/', blank=True, null=True)
+
+    f_name = models.CharField(verbose_name="نام",
+                              max_length=200, null=True, blank=True)
+    
+    l_name = models.CharField(verbose_name="نام خانوادگی",
+                              max_length=200, null=True, blank=True)
 
     objects = managers.UserManager()
     official = managers.OfficialManager()
@@ -104,6 +105,7 @@ class User(AbstractBaseUser):
 
 
 class SimpleUser(User):
+
     objects = managers.SimpleUserManager()
     official = managers.OfficialManager()
 
@@ -115,9 +117,6 @@ class SimpleUser(User):
 
 
 class Singer(User):
-    bio = models.TextField(max_length=500, 
-                           verbose_name="بیوگرافی", blank=True, null=True)
-    
 
     artist_name = models.CharField(max_length=30, 
                                    verbose_name="نام هنری", unique=True)
@@ -137,11 +136,9 @@ class Singer(User):
 
 
 class Producer(User):
+
     artist_name = models.CharField(max_length=30, 
                                    verbose_name="نام هنری", unique=True)
-    
-    bio = models.TextField(max_length=500, 
-                           verbose_name="بیوگرافی", blank=True, null=True)
     
     persentage = models.IntegerField(verbose_name="سهم پرودوسر",
                                      default=80, validators=[MinValueValidator(80),
@@ -163,13 +160,10 @@ class Producer(User):
 
 
 class Musician(User):
+
     artist_name = models.CharField(max_length=30, 
                                    verbose_name="نام هنری", unique=True)
     
-    bio = models.TextField(max_length=500, 
-                           verbose_name="بیوگرافی", blank=True, null=True)
-    
-
     persentage = models.IntegerField(verbose_name="سهم موزیسین",
                                      default=80, validators=[MinValueValidator(80),
                                                                 MaxValueValidator(100)],
@@ -190,18 +184,22 @@ class Musician(User):
 
 
 class Supporter(User):
-    Supporter_id = models.CharField(max_length=20, 
-                                    verbose_name="آیدی پشتیبان", unique=True)
+
+    supporter_id = models.CharField(max_length=20, 
+                                    verbose_name="آیدی پشتیبان", unique=True, null=True, blank=True)
+    
+    supporter_password = models.CharField(max_length=16,
+                                          verbose_name="رمز عبور پشتیبان", null=True, blank=True)
 
     objects = managers.SupporterManager()
     official = managers.OfficialManager()
     
 
     class Meta:
-        ordering = ['Supporter_id']
+        ordering = ['supporter_id']
         verbose_name = "پشتیبان"
         verbose_name_plural = "پشتیبان ها"
 
 
     def __str__(self):
-        return self.Supporter_id
+        return self.supporter_id
