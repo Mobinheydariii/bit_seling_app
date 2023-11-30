@@ -1,10 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.validators import MinValueValidator, MaxValueValidator
 from . import managers
 
 
-class User(AbstractBaseUser):
+class User(AbstractBaseUser, PermissionsMixin):
 
     class Types(models.TextChoices):
         SIMPLE_USER = "SU", "Simple_user" # The person who wants to listen or download music
@@ -34,8 +34,6 @@ class User(AbstractBaseUser):
         default=UserStatus.UN_OFFICIAL,
     )
 
-    
-
     user_name = models.CharField(max_length=20, 
                                  verbose_name="نام کاربری", unique=True)
 
@@ -56,22 +54,11 @@ class User(AbstractBaseUser):
 
     date_joined = models.DateTimeField(auto_now_add=True)
 
-    bio = models.TextField(max_length=500, 
-                           verbose_name="بیوگرافی", blank=True, null=True)
-    image = models.ImageField(verbose_name="تصویر پروفایل", 
-                              upload_to='users/', blank=True, null=True)
-
-    f_name = models.CharField(verbose_name="نام",
-                              max_length=200, null=True, blank=True)
-    
-    l_name = models.CharField(verbose_name="نام خانوادگی",
-                              max_length=200, null=True, blank=True)
-
     objects = managers.UserManager()
     official = managers.OfficialManager()
 
-    USERNAME_FIELD = "user_name"
-    REQUIRED_FIELDS = ['email', "phone"]
+    USERNAME_FIELD = "phone"
+    REQUIRED_FIELDS = ['email', "user_name"]
     
     
     class Meta:
@@ -82,26 +69,42 @@ class User(AbstractBaseUser):
 
     def __str__(self):
         return self.user_name
+    
+    def profile(self):
+        profile = UserProfile.objects.get(user=self)
 
     def has_perm(self, perm, obj=None):
-        "Does the user have a specific permission?"
-        # Simplest possible answer: Yes, always
-        return True
+            return self.is_admin
 
     def has_module_perms(self, app_label):
-        "Does the user have permissions to view the app `app_label`?"
-        # Simplest possible answer: Yes, always
-        return True
+            return self.is_admin
 
     @property
     def is_staff(self):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_admin
-    
 
 
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
+
+    bio = models.TextField(max_length=500, 
+                           verbose_name="بیوگرافی", blank=True, null=True)
+    image = models.ImageField(verbose_name="تصویر پروفایل", 
+                              upload_to='users/', blank=True, null=True)
+
+    full_name = models.CharField(verbose_name="نام کامل کاربر",
+                                    max_length=200, null=True, blank=True)
     
+    def __str__(self):
+        return f"{self.user.user_name}.....{self.full_name}"
+
+
+    class Meta:
+        verbose_name = "پروفایل کاربر"
+        verbose_name_plural = "پروفایل کاربران"    
+
 
 
 class SimpleUser(User):
@@ -203,3 +206,36 @@ class Supporter(User):
 
     def __str__(self):
         return self.supporter_id
+    
+
+
+
+class Otp(models.Model):
+    email = models.EmailField(
+        verbose_name="ایمیل",
+        max_length=255,
+        )
+    phone = models.IntegerField(verbose_name="شماره تلفن")
+    
+    fullname = models.CharField(verbose_name="نام",
+                                 max_length=200, null=True)
+    
+    type = models.CharField(verbose_name="تایپ",
+                            choices=User.Types.choices, max_length=2)
+    
+    password = models.CharField(verbose_name="رمز عبور", max_length=16)
+    password_conf = models.CharField(verbose_name="رمز تایید شده", max_length=16)
+    
+    otp = models.IntegerField(verbose_name="کد اعتبار سنجی")
+    expiration = models.DateTimeField(verbose_name="زمان اعتبار سنجی", auto_now_add=True)
+    
+    token = models.CharField(max_length=100,
+                             verbose_name="توکن", unique=True)
+    
+
+    class Meta:
+        ordering = ['phone']
+
+    def __str__(self):
+        return self.email
+    

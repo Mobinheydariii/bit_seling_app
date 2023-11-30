@@ -17,7 +17,7 @@ class UserAdmin(BaseUserAdmin):
     list_display = ["user_name", "type", "phone", "email", "is_admin"]
     list_filter = ["is_admin"]
     fieldsets = [
-        ("اطلاعات شخصی", {"fields": ["profile", "phone"]}),
+        ("اطلاعات شخصی", {"fields": ["phone"]}),
         ("طلاعات کاربر", {"fields": ["user_name", "email", "type"]}),
         ("مجوزهای کاربر", {"fields": ["is_admin", "is_active"]}),
     ]
@@ -36,7 +36,7 @@ class UserAdmin(BaseUserAdmin):
     ordering = ["type", "date_joined"]
     filter_horizontal = []
 
-
+admin.site.register(models.UserProfile)
 # Now register the new UserAdmin...
 admin.site.register(models.User, UserAdmin)
 # ... and, since we're not using Django's built-in permissions,
@@ -48,8 +48,8 @@ admin.site.unregister(Group)
 class SimpleUserAdmin(admin.ModelAdmin):
     list_display = ['user_name', 'phone', 'email']
     fieldsets = [
-        ("اطلاعات شخصی", {"fields": ["f_name", "l_name", "phone"]}),
-        ("طلاعات کاربر", {"fields": ["user_name", "email", "type"]}),
+        ("طلاعات کاربر", {"fields": ["user_name", "email", "type", "phone"]}),
+        ("اطلاعات شخصی", {"fields": []}),
         ("مجوزهای کاربر", {"fields": ["is_admin", "is_active"]}),
     ]
     search_fields = ['user_name', 'phone', 'email']
