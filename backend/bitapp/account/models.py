@@ -34,8 +34,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=UserStatus.UN_OFFICIAL,
     )
 
-    user_name = models.CharField(max_length=20, 
-                                 verbose_name="نام کاربری", unique=True)
+    username = models.CharField(max_length=20, 
+                                 verbose_name="نام کاربری", unique=True, null=True)
 
     email = models.EmailField(
         verbose_name="ایمیل",
@@ -51,6 +51,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     is_admin = models.BooleanField(default=False,
                                    verbose_name="ادمین")
+    
+    otp_auth = models.BooleanField(default=False, 
+                                        verbose_name="احراض")
 
     date_joined = models.DateTimeField(auto_now_add=True)
 
@@ -58,7 +61,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     official = managers.OfficialManager()
 
     USERNAME_FIELD = "phone"
-    REQUIRED_FIELDS = ['email', "user_name"]
+    REQUIRED_FIELDS = ['email', "username"]
     
     
     class Meta:
@@ -68,10 +71,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         
 
     def __str__(self):
-        return self.user_name
-    
-    def profile(self):
-        profile = UserProfile.objects.get(user=self)
+        return self.username
 
     def has_perm(self, perm, obj=None):
             return self.is_admin
@@ -86,8 +86,20 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.is_admin
 
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
+ 
+
+class SimpleUser(User):
+
+    objects = managers.SimpleUserManager()
+    official = managers.OfficialManager()
+
+    class Meta:
+        verbose_name = "کاربر ساده"
+        verbose_name_plural = "کاربران ساده"
+
+
+class SimpleUserProfile(models.Model):
+    user = models.ForeignKey(SimpleUser, on_delete=models.CASCADE, null=True)
 
     bio = models.TextField(max_length=500, 
                            verbose_name="بیوگرافی", blank=True, null=True)
@@ -98,32 +110,16 @@ class UserProfile(models.Model):
                                     max_length=200, null=True, blank=True)
     
     def __str__(self):
-        return f"{self.user.user_name}.....{self.full_name}"
+        return f"{self.user.username}.....{self.full_name}"
 
 
     class Meta:
         verbose_name = "پروفایل کاربر"
-        verbose_name_plural = "پروفایل کاربران"    
-
-
-
-class SimpleUser(User):
-
-    objects = managers.SimpleUserManager()
-    official = managers.OfficialManager()
-
-    class Meta:
-        verbose_name = "کاربر ساده"
-        verbose_name_plural = "کاربران ساده"
-    
+        verbose_name_plural = "پروفایل کاربران"   
     
 
 
 class Singer(User):
-
-    artist_name = models.CharField(max_length=30, 
-                                   verbose_name="نام هنری", unique=True)
-    
 
     objects = managers.SingerManager()
     official = managers.OfficialManager()
@@ -138,15 +134,33 @@ class Singer(User):
         return self.artist_name
 
 
-class Producer(User):
+class SingerProfile(models.Model):
+    singer = models.ForeignKey(Singer, on_delete=models.CASCADE, null=True)
 
-    artist_name = models.CharField(max_length=30, 
-                                   verbose_name="نام هنری", unique=True)
+    artistic_name = models.CharField(max_length=200, 
+                                     verbose_name="نام هنری", 
+                                     unique=True, null=True, blank=True)
+
+    bio = models.TextField(max_length=500, 
+                           verbose_name="بیوگرافی", blank=True, null=True)
     
-    persentage = models.IntegerField(verbose_name="سهم پرودوسر",
-                                     default=80, validators=[MinValueValidator(80),
-                                                                MaxValueValidator(100)],
-                                                                help_text="سهم پرودوسر از فروش بیت بین 80 تا 100 درصد می باشد")
+    image = models.ImageField(verbose_name="تصویر پروفایل", 
+                              upload_to='singer/image/profile/', blank=True, null=True)
+
+    full_name = models.CharField(verbose_name="نام کامل کاربر",
+                                    max_length=200, null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.singer.username}.....{self.full_name}"
+
+
+    class Meta:
+        verbose_name = "پروفایل خواننده"
+        verbose_name_plural = "پروفایل خوانندگان"
+
+
+
+class Producer(User):
 
     objects = managers.ProducerManager()
     official = managers.OfficialManager()
@@ -161,16 +175,31 @@ class Producer(User):
         return self.artist_name
     
 
+class ProducerProfile(models.Model):
+    producer = models.ForeignKey(Producer, on_delete=models.CASCADE, null=True)
+
+    artistic_name = models.CharField(max_length=200, 
+                                     verbose_name="نام هنری", 
+                                     unique=True, null=True, blank=True)
+
+    bio = models.TextField(max_length=500, 
+                           verbose_name="بیوگرافی", blank=True, null=True)
+    
+    image = models.ImageField(verbose_name="تصویر پروفایل", 
+                              upload_to='singer/image/profile/', blank=True, null=True)
+
+    full_name = models.CharField(verbose_name="نام کامل کاربر",
+                                    max_length=200, null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.producer.username}.....{self.full_name}"
+
+
+    class Meta:
+        verbose_name = "پروفایل پرودوسر"
+        verbose_name_plural = "پروفایل پرودوسرها"
 
 class Musician(User):
-
-    artist_name = models.CharField(max_length=30, 
-                                   verbose_name="نام هنری", unique=True)
-    
-    persentage = models.IntegerField(verbose_name="سهم موزیسین",
-                                     default=80, validators=[MinValueValidator(80),
-                                                                MaxValueValidator(100)],
-                                                                help_text="سهم موزیسین از فروش بیت بین 80 تا 100 درصد می باشد")
 
     objects = managers.MusicianManager()
     official = managers.OfficialManager()
@@ -183,6 +212,30 @@ class Musician(User):
 
     def __str__(self):
         return self.artist_name
+
+class MusicianProfile(models.Model):
+    musician = models.ForeignKey(Musician, on_delete=models.CASCADE, null=True)
+
+    artistic_name = models.CharField(max_length=200, 
+                                     verbose_name="نام هنری", 
+                                     unique=True, null=True, blank=True)
+
+    bio = models.TextField(max_length=500, 
+                           verbose_name="بیوگرافی", blank=True, null=True)
+    
+    image = models.ImageField(verbose_name="تصویر پروفایل", 
+                              upload_to='singer/image/profile/', blank=True, null=True)
+
+    full_name = models.CharField(verbose_name="نام کامل کاربر",
+                                    max_length=200, null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.musician.username}.....{self.full_name}"
+
+
+    class Meta:
+        verbose_name = "پروفایل موزیسین"
+        verbose_name_plural = "پروفایل موزیسین ها"
 
 
 
@@ -211,30 +264,21 @@ class Supporter(User):
 
 
 class Otp(models.Model):
-    email = models.EmailField(
-        verbose_name="ایمیل",
-        max_length=255,
-        )
-    phone = models.IntegerField(verbose_name="شماره تلفن")
     
-    fullname = models.CharField(verbose_name="نام",
-                                 max_length=200, null=True)
-    
-    type = models.CharField(verbose_name="تایپ",
-                            choices=User.Types.choices, max_length=2)
-    
-    password = models.CharField(verbose_name="رمز عبور", max_length=16)
-    password_conf = models.CharField(verbose_name="رمز تایید شده", max_length=16)
+    user = models.OneToOneField(User,
+                                verbose_name="کاربر",
+                                on_delete=models.CASCADE, null=True)
     
     otp = models.IntegerField(verbose_name="کد اعتبار سنجی")
-    expiration = models.DateTimeField(verbose_name="زمان اعتبار سنجی", auto_now_add=True)
     
     token = models.CharField(max_length=100,
                              verbose_name="توکن", unique=True)
     
 
     class Meta:
-        ordering = ['phone']
+        ordering = ['user']
+        verbose_name = "otp"
+        verbose_name_plural = "otp"
 
     def __str__(self):
         return self.email

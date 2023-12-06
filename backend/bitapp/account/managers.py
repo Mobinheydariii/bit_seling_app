@@ -13,9 +13,9 @@ class OfficialManager(Manager):
 
 class UserManager(BaseUserManager):
     # Method to create user with provided credentials
-    def create_user(self , user_name, email , phone, password = None): 
+    def create_user(self , username, email , phone, password = None): 
         # Validate username
-        if not user_name or len(user_name) <= 0 :
+        if not username or len(username) <= 0 :
             raise ValueError("Users must have a valid username")
         # Validate phone number
         if not phone or len(phone) <= 0 :
@@ -30,7 +30,7 @@ class UserManager(BaseUserManager):
         # Create user
         email = email.lower() 
         user = self.model( 
-            user_name = user_name,
+            username = username,
             email = email,
             phone = phone
         ) 
@@ -39,9 +39,9 @@ class UserManager(BaseUserManager):
         return user 
 
     # Method to create superuser with provided credentials
-    def create_superuser(self, user_name, email, phone, password=None):
+    def create_superuser(self, username, email, phone, password=None):
         # Validate username
-        if not user_name or len(user_name) <= 0 :
+        if not username or len(username) <= 0 :
             raise ValueError("Users must have a valid username")
         # Validate phone number
         if not phone or len(phone) <= 0 :
@@ -55,7 +55,7 @@ class UserManager(BaseUserManager):
         
         user = self.create_user(
             email=self.normalize_email(email),
-            user_name=user_name,
+            username=username,
             phone=phone,
             password=password
         )

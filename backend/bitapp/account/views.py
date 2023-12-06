@@ -1,18 +1,16 @@
 from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import render
+
 from rest_framework.authtoken.models import Token
 from rest_framework import status
-from django.shortcuts import render
 from rest_framework.views import APIView, Response
-from .serializers import *
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.utils.crypto import get_random_string
-from django.urls import reverse
+from rest_framework import generics
 from random import randint 
 
+from .serializers import *
 
-
-class MyTokenObtainView(TokenObtainPairView):
-    serializer_class = MyTokenObtainPairSerializer
 
 
 class UserList(APIView):
@@ -50,21 +48,23 @@ class UserProfile(APIView):
         serializer = UserSerializer(instance=profile)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
+
+
 class UserLogin(APIView):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
             if user is not None:
                 login(request, user)
-                token, created = Token.objects.get_or_create(user=user)
+                token = Token.objects.get_or_create(user=user)
                 return Response({'token': token.key}, status=status.HTTP_200_OK)
             else:
                 return Response({"detail": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"detail": "Couldn't create a new token for the user"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-
+    
 class UserLogout(APIView):
     def post(self, request):
         if request.user.is_authenticated:
@@ -75,46 +75,24 @@ class UserLogout(APIView):
 
 
 
-class UserRegister(APIView):
+class SimleUserRegisterView(APIView):
     def post(self, request):
-        serializer = RegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            cd = serializer.validated_data
-            random_code = randint(100000, 999999)
-            # SMS.verification({
-            #     'reseptor' : cd['phone'],
-            #     'template' : 'template_name',
-            #     'type' : '1',
-            #     'param1' : random_code
-            #     })
-            token = get_random_string(length=100)
-            Otp.objects.create(email=cd['email'], phone=cd['phone'], password=cd['password'],
-                               full_name=cd['full_name'], type=cd['type'], otp_code=random_code, token=token)
-
-            return Response({'token': token}, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UserCheckOtp(APIView):
-    def post(self, request):
-        serializer = UserCheckOtp(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
+        if request.user.is_authenticated:
+            return Response({"detail": "You are authenticated"}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(serializer.errors)
-
-class PasswordChange(APIView):
-    def put(self, request):
-        serializer = serializer.PasswordChangeSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            if serializer.validated_data['new_password'] == serializer.validated_data['confirm_new_password']:
+            serializer = SimpleUserRegistertionSerializer(data=request.data, partial=True)
+            if serializer.is_valid(raise_exception=True):
                 serializer.save()
-                return Response({"detail": "Password changed successfully"}, status=status.HTTP_200_OK)
+                user = User.objects.create(
+                    phone = serializer.validated_data['phone'],
+                    email = serializer.validated_data['email'],
+                    username = serializer.validated_data['username'],
+                    password = serializer.validated_data['password'],
+                    type = "Simple_user"
+                )
+                user.save()
+                
+                return Response("user created")
+                
             else:
-                return Response({"detail": "New passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
+                return Response({"errores" : serializer.errors})

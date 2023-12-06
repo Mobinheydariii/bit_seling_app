@@ -14,11 +14,11 @@ class UserAdmin(BaseUserAdmin):
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
-    list_display = ["user_name", "type", "phone", "email", "is_admin"]
+    list_display = ["username", "type", "phone", "email", "is_admin"]
     list_filter = ["is_admin"]
     fieldsets = [
         ("اطلاعات شخصی", {"fields": ["phone"]}),
-        ("طلاعات کاربر", {"fields": ["user_name", "email", "type"]}),
+        ("طلاعات کاربر", {"fields": ["username", "email", "type"]}),
         ("مجوزهای کاربر", {"fields": ["is_admin", "is_active"]}),
     ]
     # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
@@ -32,11 +32,10 @@ class UserAdmin(BaseUserAdmin):
             },
         ),
     ]
-    search_fields = ["user_name", "phone", "email", "type"]
+    search_fields = ["username", "phone", "email", "type"]
     ordering = ["type", "date_joined"]
     filter_horizontal = []
 
-admin.site.register(models.UserProfile)
 # Now register the new UserAdmin...
 admin.site.register(models.User, UserAdmin)
 # ... and, since we're not using Django's built-in permissions,
@@ -46,72 +45,72 @@ admin.site.unregister(Group)
 
 @admin.register(models.SimpleUser)
 class SimpleUserAdmin(admin.ModelAdmin):
-    list_display = ['user_name', 'phone', 'email']
+    list_display = ['username', 'phone', 'email']
     fieldsets = [
-        ("طلاعات کاربر", {"fields": ["user_name", "email", "type", "phone"]}),
+        ("طلاعات کاربر", {"fields": ["username", "email", "type", "phone"]}),
         ("اطلاعات شخصی", {"fields": []}),
         ("مجوزهای کاربر", {"fields": ["is_admin", "is_active"]}),
     ]
-    search_fields = ['user_name', 'phone', 'email']
+    search_fields = ['username', 'phone', 'email']
     list_filter = ['phone', 'email']
     ordering = ['date_joined']
 
 
 @admin.register(models.Singer)
 class SingerAdmin(admin.ModelAdmin):
-    list_display = ['user_name', 'type', 'status', 'artist_name', 'phone', 'email']
+    list_display = ['username', 'type', 'status', 'phone', 'email']
     fieldsets = [
         ("اطلاعات شخصی", {"fields": ["f_name", "l_name", "phone", "artist_name"]}),
-        ("طلاعات کاربر", {"fields": ["user_name", "email", "type"]}),
+        ("طلاعات کاربر", {"fields": ["username", "email", "type"]}),
         ("مجوزهای کاربر", {"fields": ["is_admin", "is_active"]}),
         ("پروفایل کاربر", {"fields": ["bio", "image"]}),
         ("وضعیت کاربر", {"fields": ["status"]})
     ]
-    search_fields = ['user_name', 'phone', 'email', 'artist_name']
-    list_filter = ['status', 'artist_name']
+    search_fields = ['username', 'phone', 'email']
+    list_filter = ['status']
     ordering = ['date_joined', 'status']
 
 
 @admin.register(models.Producer)
 class ProducerAdmin(admin.ModelAdmin):
-    list_display = ['user_name', 'phone', 'email', 'status', 'artist_name']
+    list_display = ['username', 'phone', 'email', 'status']
     fieldsets = [
         ("اطلاعات شخصی", {"fields": ["f_name", "l_name", "phone", "artist_name"]}),
-        ("طلاعات کاربر", {"fields": ["user_name", "email", "type"]}),
+        ("طلاعات کاربر", {"fields": ["username", "email", "type"]}),
         ("مجوزهای کاربر", {"fields": ["is_admin", "is_active"]}),
         ("پروفایل کاربر", {"fields": ["bio", "image"]}),
         ("وضعیت کاربر", {"fields": ["status", "persentage"]})
     ]
-    search_fields = ['user_name', 'phone', 'email', 'artist_name']
-    list_filter = ['status', 'artist_name']
+    search_fields = ['username', 'phone', 'email']
+    list_filter = ['status']
     ordering = ['date_joined', 'status']
 
 
 
 @admin.register(models.Musician)
 class MusicianAdmin(admin.ModelAdmin):
-    list_display = [ 'phone', 'email', 'status', 'artist_name']
+    list_display = [ 'phone', 'email', 'status']
     fieldsets = [
-        ("اطلاعات شخصی", {"fields": ["f_name", "l_name", "phone", "artist_name"]}),
-        ("طلاعات کاربر", {"fields": ["user_name", "email", "type"]}),
+        ("اطلاعات شخصی", {"fields": ["f_name", "l_name", "phone"]}),
+        ("طلاعات کاربر", {"fields": ["username", "email", "type"]}),
         ("مجوزهای کاربر", {"fields": ["is_admin", "is_active"]}),
         ("پروفایل کاربر", {"fields": ["bio", "image"]}),
         ("وضعیت کاربر", {"fields": ["status", "persentage"]})
     ]
-    search_fields = ['user_name', 'phone', 'email', 'artist_name']
-    list_filter = ['status', 'artist_name']
+    search_fields = ['username', 'phone', 'email']
+    list_filter = ['status']
     ordering = ['date_joined', 'status']
 
 
 
 @admin.register(models.Supporter)
 class SupporterAdmin(admin.ModelAdmin):
-    list_display = ['user_name', 'type', 'phone', 'email']
+    list_display = ['username', 'type', 'phone', 'email']
     fieldsets = [
         ("اطلاعات شخصی", {"fields": ["f_name", "l_name", "phone" ]}),
-        ("طلاعات کاربر", {"fields": ["user_name", "email", "supporter_id", "supporter_password"]}),
+        ("طلاعات کاربر", {"fields": ["username", "email", "supporter_id", "supporter_password"]}),
         ("مجوزهای کاربر", {"fields": ["is_admin", "is_active"]})
     ]
-    search_fields = ['user_name', 'type', 'phone', 'email']
+    search_fields = ['username', 'type', 'phone', 'email']
     list_filter = ['type', 'phone', 'email']
     ordering = ['date_joined']
